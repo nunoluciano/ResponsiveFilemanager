@@ -3,7 +3,7 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 {
 	"use strict";
 
-	var version = "9.13.0";
+	var version = "9.14.0";
 	var active_contextmenu = true;
 	var myLazyLoad = null;
 	var clipboard = null;
@@ -115,7 +115,7 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 							execute_action('duplicate_file', _this.attr('data-path'), name, _this, 'apply_file_duplicate');
 						}
 					}
-				}, old_name);
+				}, old_name+" - copy");
 			},
 
 			select: function($trigger)
@@ -239,9 +239,10 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 						disabled: false
 					};
 					// extract
-					if ($trigger.find('.img-precontainer-mini .filetype').hasClass('zip') ||
+					if (($trigger.find('.img-precontainer-mini .filetype').hasClass('zip') ||
 						$trigger.find('.img-precontainer-mini .filetype').hasClass('tar') ||
-						$trigger.find('.img-precontainer-mini .filetype').hasClass('gz'))
+						$trigger.find('.img-precontainer-mini .filetype').hasClass('gz')) && 
+						jQuery('#extract_files').val() == 1)
 					{
 						options.items.unzip = {
 							name: jQuery('#lang_extract').val(),
@@ -450,8 +451,8 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 			grid.on('click', '.rename-file', function ()
 			{
 				var _this = jQuery(this);
-
-				var file_container = _this.parent().parent().parent();
+				var file_container = _this.closest('figure');
+				var path = file_container.attr('data-path');
 				var file_title = file_container.find('h4');
 				var old_name = $.trim(file_title.text());
 				bootbox.prompt(jQuery('#rename').val(), jQuery('#cancel').val(), jQuery('#ok').val(), function (name)
@@ -461,7 +462,7 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 						name = fix_filename(name);
 						if (name != old_name)
 						{
-							execute_action('rename_file', _this.attr('data-path'), name, file_container, 'apply_file_rename');
+							execute_action('rename_file', path, name, file_container, 'apply_file_rename');
 						}
 					}
 				}, old_name);
@@ -470,8 +471,9 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 			grid.on('click', '.rename-folder', function ()
 			{
 				var _this = jQuery(this);
+				var file_container = _this.closest('figure');
+				var path = file_container.attr('data-path');
 
-				var file_container = _this.parent().parent().parent();
 				var file_title = file_container.find('h4');
 				var old_name = $.trim(file_title.text());
 				bootbox.prompt(jQuery('#rename').val(), jQuery('#cancel').val(), jQuery('#ok').val(), function (name)
@@ -481,7 +483,7 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 						name = fix_filename(name).replace('.', '');
 						if (name != old_name)
 						{
-							execute_action('rename_folder', _this.attr('data-path'), name, file_container, 'apply_folder_rename');
+							execute_action('rename_folder', path, name, file_container, 'apply_folder_rename');
 						}
 					}
 				}, old_name);
@@ -490,11 +492,12 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 			grid.on('click', '.delete-file', function ()
 			{
 				var _this = jQuery(this);
+				var path = _this.closest('figure').attr('data-path');
 				bootbox.confirm(_this.attr('data-confirm'), jQuery('#cancel').val(), jQuery('#ok').val(), function (result)
 				{
 					if (result == true)
 					{
-						execute_action('delete_file', _this.attr('data-path'), '', '', '');
+						execute_action('delete_file', path, '', '', '');
 						var fil = jQuery('#files_number');
 						fil.text(parseInt(fil.text())-1);
 						_this.parent().parent().parent().parent().remove();
@@ -505,12 +508,13 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 			grid.on('click', '.delete-folder', function ()
 			{
 				var _this = jQuery(this);
+				var path = _this.closest('figure').attr('data-path');
 
 				bootbox.confirm(_this.attr('data-confirm'), jQuery('#cancel').val(), jQuery('#ok').val(), function (result)
 				{
 					if (result == true)
 					{
-						execute_action('delete_folder', _this.attr('data-path'), '', '', '');
+						execute_action('delete_folder', path, '', '', '');
 						var fol = jQuery('#folders_number');
 						fol.text(parseInt(fol.text())-1);
 						_this.parent().parent().parent().remove();
@@ -521,7 +525,6 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 			function handleFileLink($el)
 			{
 				var fun = $el.attr('data-function');
-				console.log(fun);
 				if(fun=="apply_multiple"){
 					$el.find('.selection:visible').trigger('click');
 					$el.find('.selector:visible').trigger('click');
@@ -630,11 +633,11 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 				// Uncomment the following to send cross-domain cookies:
 				//xhrFields: {withCredentials: true},
 				url: 'upload.php',
-				maxChunkSize: 2 * 1024 * 1024 // 2 MB
+				maxChunkSize: 2 * 1024 * 1024, // 2 MB
 			});
 			jQuery('#fileupload').bind('fileuploaddrop', function (e, data) {
-				console.log(data);
 				jQuery('.uploader').show(200);
+				setTimeout(function(){ jQuery('#fileupload > div > div.fileupload-buttonbar > div.text-center > button').click(); },200);
 			});
 			jQuery('#fileupload').bind('fileuploadsubmit', function (e, data) {
 				// The example input, doesn't have to be part of the upload form:
@@ -838,7 +841,7 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 		// info btn
 		jQuery('#info').on('click', function ()
 		{
-			bootbox.alert('<div class="text-center"><br/><img src="img/logo.png" alt="responsive filemanager"/><br/><br/><p><strong>RESPONSIVE filemanager v.' + version + '</strong><br/><a href="http://www.responsivefilemanager.com">responsivefilemanager.com</a></p><br/><p>Copyright © <a href="http://www.tecrail.com" alt="tecrail">Tecrail</a> - Alberto Peripolli. All rights reserved.</p><br/><p>License<br/><small><img alt="Creative Commons License" style="border-width:0" src="http://responsivefilemanager.com/license.php" /><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/3.0/">Creative Commons Attribution-NonCommercial 3.0 Unported License</a>.</small></p></div>');
+			bootbox.alert('<div class="text-center"><br/><img src="img/logo.png" alt="responsive filemanager"/><br/><br/><p><strong>RESPONSIVE filemanager v.' + version + '</strong><br/><a href="http://www.responsivefilemanager.com">responsivefilemanager.com</a></p><br/><p>Copyright © <a href="http://www.tecrail.com" alt="tecrail">Tecrail</a> - Alberto Peripolli. All rights reserved.</p><br/><p>License<br/><small><img alt="Creative Commons License" style="border-width:0" src="https://www.responsivefilemanager.com/license.php" /><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/3.0/">Creative Commons Attribution-NonCommercial 3.0 Unported License</a>.</small></p></div>');
 		});
 
 		jQuery('#change_lang_btn').on('click', function ()
@@ -883,10 +886,14 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 						}
 					}).done(function (msg)
 					{
-						setTimeout(function ()
-						{
-							window.location.href = jQuery('#refresh').attr('href') + '&' + new Date().getTime();
-						}, 300);
+						if(msg){
+							bootbox.alert(jQuery('#rename_existing_folder').val());
+						}else{
+							setTimeout(function ()
+							{
+								window.location.href = jQuery('#refresh').attr('href') + '&' + new Date().getTime();
+							}, 300);
+						}
 
 					});
 				}
@@ -974,10 +981,14 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 				clear_clipboard();
 			}
 		});
-		var getFiles = function(){
+		var getFiles = function(path){
 			var files = [];
 			jQuery('.selection:checkbox:checked:visible').each(function () {
-				files.push(jQuery(this).val());
+				var file = jQuery(this).val();
+				if(path){
+					file = jQuery(this).closest('figure').attr('data-path');
+				}
+				files.push(file);
 			});
 			return files;
 		};
@@ -1005,14 +1016,15 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 			{
 				if (result == true)
 				{
-					var files = getFiles();
+					var files = getFiles(true);
+
 					execute_multiple_action('delete_files', files, '', '', '');
 					var fil = jQuery('#files_number');
 					fil.text(parseInt(fil.text())-files.length);
 					jQuery('.selection:checkbox:checked:visible').each(function () {
 						jQuery(this).closest('li').remove();
 					});
-
+					jQuery("#multiple-selection").hide(300);
 				}
 			});
 		});
@@ -1202,7 +1214,7 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 		// remove to prevent duplicates
 		jQuery('#textfile_edit_area').parent().parent().remove();
 
-		var full_path = $trigger.find('.rename-file-paths').attr('data-path');
+		var full_path = $trigger.closest('figure').attr('data-path');
 
 		$.ajax({
 			type: "POST",
@@ -1222,6 +1234,9 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 						"callback": function ()
 						{
 							var newContent = jQuery('#textfile_edit_area').val();
+							if(window.editor){
+								newContent = window.editor.getData();
+							}
 							// post ajax
 							$.ajax({
 								type: "POST",
@@ -1301,7 +1316,7 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 		jQuery('#files_permission_start').parent().parent().remove();
 
 		var obj = $trigger.find('.rename-file-paths');
-		var full_path = obj.attr('data-path');
+		var full_path = $trigger.closest('figure').attr('data-path');
 		var permissions = obj.attr('data-permissions');
 		var folder = obj.attr('data-folder');
 
@@ -1521,14 +1536,7 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 
 		var thumb_path, full_path;
 
-		if (!$trigger.hasClass('directory'))
-		{
-			full_path = $trigger.find('.rename-file-paths').attr('data-path');
-		}
-		else
-		{
-			full_path = $trigger.find('.rename-file-paths').attr('data-path');
-		}
+		full_path = $trigger.closest('figure').attr('data-path');
 
 		$.ajax({
 			type: "POST",
@@ -1560,7 +1568,7 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 				var folder_path;
 				if (typeof dnd != 'undefined')
 				{
-					folder_path = dnd.find('.rename-folder').attr('data-path');
+					folder_path = dnd.closest('figure').attr('data-path');
 				}
 				else
 				{
@@ -1608,7 +1616,7 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 			obj = $trigger.find('.rename-folder');
 		}
 
-		var full_path = obj.attr('data-path');
+		var full_path = $trigger.closest('figure').attr('data-path');
 
 		$trigger.parent().hide(100);
 
@@ -1636,7 +1644,7 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 					}
 					else
 					{
-						folder_path = dnd.find('.rename-folder').attr('data-path');
+						folder_path = dnd.closest('figure').attr('data-path');
 					}
 				}
 				else
@@ -1748,18 +1756,20 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 	function returnUrls(files){
 		var path = jQuery('#cur_dir').val();
 		path = path.replace('\\', '/');
-		var subdir = jQuery('#subdir').val();
-		subdir = subdir.replace('\\', '/');
+		var sub_folder = jQuery('#sub_folder').val();
+		sub_folder = sub_folder.replace('\\', '/');
 		var base_url = jQuery('#base_url').val();
+		var fldr = jQuery('#fldr_value').val();
+		fldr = fldr.replace('\\', '/');
 		var urls=[];
 		var is_return_relative_url = jQuery('#return_relative_url').val();
 		var is_ftp = jQuery('#ftp').val() == true;
 		for(var i = 0; i< files.length; i++){
 			var file = files[i];
 			if(is_ftp){
-				urls.push(encodeURL(jQuery('#ftp_base_url').val() + jQuery('#upload_dir').val() + jQuery('#fldr_value').val() + file));
+				urls.push(encodeURL(jQuery('#ftp_base_url').val() + jQuery('#upload_dir').val() + fldr + file));
 			}else{
-				urls.push(encodeURL((is_return_relative_url == 1 ? subdir : base_url + path) + file));
+				urls.push(encodeURL((is_return_relative_url == 1 ? sub_folder + fldr : base_url + path) + file));
 			}
 		}
 		return urls;
@@ -2007,6 +2017,8 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 		{
 			if(jQuery('#add_time_to_img').val()){
 				var url = urls[0] + "?" + new Date().getTime();
+			}else{
+				url = urls[0];
 			}
 			apply_any(url);
 		}
@@ -2020,7 +2032,6 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 			files = new Array(files);
 		}
 		var urls=returnUrls(files);
-		console.log(urls);
 		var res = JSON.stringify(urls);
 		if(urls.length==1){
 			res = urls[0];
@@ -2177,18 +2188,27 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 
 		var old_name = file.substring(file.lastIndexOf('/') + 1);
 		var extension = file.substring(file.lastIndexOf('.') + 1);
+		if(extension){
+			extension = "."+extension;
+		}else{
+			extension = '';
+		}
 
 		link.each(function ()
 		{
-			jQuery(this).attr('data-file', encodeURIComponent(name + "." + extension));
+			jQuery(this).attr('data-file', encodeURIComponent(name + extension));
 		});
 
 		//thumbnails
 		container.find('img').each(function ()
 		{
 			var src = jQuery(this).attr('src');
-
-			jQuery(this).attr('src', src.replace(old_name, name + "." + extension) + '?time=' + new Date().getTime());
+			if(src){
+				jQuery(this).attr('src', src.replace(old_name, name + extension) + '?time=' + new Date().getTime());
+			}else{
+				var src = jQuery(this).attr('data-src');
+				jQuery(this).attr('data-src', src.replace(old_name, name + extension) + '?time=' + new Date().getTime());
+			}
 			jQuery(this).attr('alt', name + " thumbnails");
 		});
 
@@ -2197,25 +2217,21 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 		file = link2.attr('data-url');
 		if (typeof file !== "undefined" && file)
 		{
-			link2.attr('data-url', file.replace(encodeURIComponent(old_name), encodeURIComponent(name + "." + extension)));
+			link2.attr('data-url', file.replace(encodeURIComponent(old_name), encodeURIComponent(name + extension)));
 		}
 
 		//li data-name
-		container.parent().attr('data-name', name + "." + extension);
-		container.attr('data-name', name + "." + extension);
+		container.parent().attr('data-name', name + extension);
+		container.attr('data-name', name  + extension);
 
 		//download link
-		container.find('.name_download').val(name + "." + extension);
+		container.find('.name_download').val(name + extension);
 
-		//rename link && delete link
-		var link3 = container.find('a.rename-file');
-		var link4 = container.find('a.delete-file');
+		//rename path
+		var path_old = container.attr('data-path');
+		var new_path = path_old.replace(old_name, name + extension);
 
-		var path_old = link3.attr('data-path');
-		var new_path = path_old.replace(old_name, name + "." + extension);
-
-		link3.attr('data-path', new_path);
-		link4.attr('data-path', new_path);
+		container.attr('data-path', new_path);
 	}
 
 	apply_folder_rename = function (container, name)
@@ -2238,13 +2254,10 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 		});
 
 		//rename link && delete link
-		var link2 = container.find('a.delete-folder');
-		var link3 = container.find('a.rename-folder');
-		var path_old = link3.attr('data-path');
+		var path_old = container.attr('data-path');
 		var index = path_old.lastIndexOf('/');
 		var new_path = path_old.substr(0, index + 1) + name;
-		link2.attr('data-path', new_path);
-		link3.attr('data-path', new_path);
+		container.attr('data-path', new_path);
 
 	}
 
@@ -2452,14 +2465,13 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 
 		lis_dir.each(function (index)
 		{
-			var _this = jQuery(this);
-			_this.html(vals_dir[ values_dir[ index ] ]);
+			jQuery(this).html(vals_dir[ values_dir[ index ] ]);
 		});
 
 		lis_file.each(function (index)
 		{
-			var _this = jQuery(this);
-			_this.html(vals_file[ values_file[ index ] ]);
+			jQuery(this).html(vals_file[ values_file[ index ] ]);
+			jQuery(this).attr('data-name',jQuery(this).children().attr('data-name'));
 		});
 	}
 
