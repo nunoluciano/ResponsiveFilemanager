@@ -23,6 +23,8 @@ elixir(function (mix) {
             '../../../node_modules/bootstrap/docs/assets/css/bootstrap-responsive.css',
             '../../../node_modules/bootstrap-modal/css/bootstrap-modal.css',
             '../../../node_modules/jquery-contextmenu/dist/jquery.contextMenu.css',
+            '../../../node_modules/tui-color-picker/dist/tui-color-picker.css',
+            '../../../node_modules/tui-image-editor/dist/tui-image-editor.css',
             'lib.css',
             'style.css'
         ],
@@ -66,6 +68,17 @@ elixir(function (mix) {
         'node_modules'
     );
 
+    mix.scripts(
+        [
+            "fabric/dist/fabric.js",
+            "tui-code-snippet/dist/tui-code-snippet.js",
+            "tui-color-picker/dist/tui-color-picker.js",
+            "tui-image-editor/dist/tui-image-editor.js",
+        ],
+        'filemanager/js/tui-image-editor.js',
+        'node_modules'
+    );
+
     mix.copy('node_modules/blueimp-file-upload/js', 'filemanager/js/');
     mix.copy('node_modules/blueimp-file-upload/css', 'filemanager/css/');
 
@@ -87,5 +100,10 @@ elixir(function (mix) {
     mix.scripts(
         ['modernizr.custom.js'],
         'filemanager/js/modernizr.custom.js'
+    );
+
+    mix.scripts(
+        ['load_more.js'],
+        'filemanager/js/load_more.js'
     );
 });

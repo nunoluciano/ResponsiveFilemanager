@@ -243,10 +243,14 @@ function deleteDir($dir, $ftp = null, $config = null)
 function duplicate_file($old_path, $name, $ftp = null, $config = null)
 {
     $info = pathinfo($old_path);
-    $new_path = $info['dirname'] . "/" . $name . "." . $info['extension'];
+    $ext="";
+    if(isset($info['extension']) && $info['extension']){
+        $ext = ".".$info['extension'];
+    }
+    $new_path = $info['dirname'] . "/" . $name . $ext;
     if ($ftp) {
         try {
-            $tmp = time().$name . "." . $info['extension'];
+            $tmp = time().$name . $ext;
             $ftp->get($tmp, "/".$old_path, FTP_BINARY);
             $ftp->put("/".$new_path, $tmp, FTP_BINARY);
             unlink($tmp);
@@ -560,8 +564,13 @@ function checkresultingsize($sizeAdded)
 function create_folder($path = null, $path_thumbs = null, $ftp = null, $config = null)
 {
     if ($ftp) {
-        $ftp->mkdir($path);
-        $ftp->mkdir($path_thumbs);
+        $result_path = $result_thumb = false;
+        $result_path = $ftp->mkdir($path);
+        $result_thumb = $ftp->mkdir($path_thumbs);
+        if (!$result_thumb || !$result_path){
+            return false;
+        }
+        return true;
     } else {
         if (file_exists($path) || file_exists($path_thumbs)) {
             return false;
@@ -615,11 +624,11 @@ function check_file_extension($extension, $config)
 {
     $check = false;
     if (!$config['ext_blacklist']) {
-        if (in_array(mb_strtolower($extension), $conf['ext'])) {
+        if (in_array(mb_strtolower($extension), $config['ext'])) {
             $check = true;
         }
     } else {
-        if (!in_array(mb_strtolower($extension), $conf['ext_blacklist'])) {
+        if (!in_array(mb_strtolower($extension), $config['ext_blacklist'])) {
             $check = true;
         }
     }
@@ -776,7 +785,7 @@ function fix_strtoupper($str)
  */
 function fix_strtolower($str)
 {
-    if (function_exists('mb_strtoupper')) {
+    if (function_exists('mb_strtolower')) {
         return mb_strtolower($str);
     } else {
         return strtolower($str);
@@ -844,16 +853,39 @@ function image_check_memory_usage($img, $max_breedte, $max_hoogte)
                 $memory_limit = abs(intval(str_replace(array('G'), '', $mem) * 1024 * 1024 * 1024));
             }
 
-            $image_properties = getimagesize($img);
+            if (($image_properties = getimagesize($img)) === false) {
+                return false;
+            }
             $image_width = $image_properties[0];
             $image_height = $image_properties[1];
+
+            if ($image_properties[2] == IMAGETYPE_PNG) {
+                // PHP's getimagesize() doesn't return the number of channels for PNG files
+                require_once __DIR__ . '/get_png_imageinfo.php';
+                if ($png_properties = get_png_imageinfo($img)) {
+                    $image_properties['bits'] = $png_properties['bits'];
+                    $image_properties['channels'] = $png_properties['channels'];
+                }
+            }
+
+            $image_bits = 0;
+            $image_channels = 0;
             if (isset($image_properties['bits'])) {
                 $image_bits = $image_properties['bits'];
-            } else {
-                $image_bits = 0;
+                $image_channels = isset($image_properties['channels']) ? $image_properties['channels'] : 1;
             }
-            $image_memory_usage = $K64 + ($image_width * $image_height * ($image_bits >> 3) * 2);
-            $thumb_memory_usage = $K64 + ($max_breedte * $max_hoogte * ($image_bits >> 3) * 2);
+
+            if ($image_properties[2] == IMAGETYPE_GIF) {
+                // GIF supports up to 8 bits per pixel
+                if (empty($image_bits)) {
+                    $image_bits = 8;
+                }
+                // GIF uses indexed color which obviates channels
+                $image_channels = 1;
+            }
+
+            $image_memory_usage = $K64 + ($image_width * $image_height * ($image_bits * $image_channels / 8) * 2);
+            $thumb_memory_usage = $K64 + ($max_breedte * $max_hoogte * ($image_bits * $image_channels / 8) * 2);
             $memory_needed = abs(intval($memory_usage + $image_memory_usage + $thumb_memory_usage));
 
             if ($memory_needed > $memory_limit) {

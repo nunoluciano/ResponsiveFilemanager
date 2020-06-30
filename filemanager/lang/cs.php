@@ -41,9 +41,9 @@ return array(
 	'Text_filter' => 'textový filtr',
 	'Swipe_help' => 'Pro zobrazení možností klikněte na název souboru/složky.',
 	'Upload_base' => 'Základní nahrávání',
-	'Upload_base_help' => "Soubory přetáhněte (pouze moderní prohlížeče) nebo klikněte na horní tlačítko 'Přidat soubor(y)' a poté na tlačítko 'Sputit nahrávání'. Až bude nahrávání dokončeno, klikněte na 'Zpět k seznamu souborů'.",
+	'Upload_base_help' => "Soubory přetáhněte (pouze moderní prohlížeče) nebo klikněte na horní tlačítko 'Přidat soubor(y)' a poté na tlačítko 'Spustit nahrávání'. Až bude nahrávání dokončeno, klikněte na 'Zpět k seznamu souborů'.",
 	'Upload_add_files' => 'Přidat soubor(y)',
-	'Upload_start' => 'Sputit nahrávání',
+	'Upload_start' => 'Spustit nahrávání',
 	'Upload_error_messages' =>array(
 		1 => 'Nahrávaný soubor má větší velikost, než co povoluje direktiva upload_max_filesize v php.ini',
 		2 => 'Nahrávaný soubor má větší velikost, než co povoluje direktiva MAX_FILE_SIZE uvedená v HTML formuláři',
@@ -95,8 +95,10 @@ return array(
 	'Copy_Cut_Size_Limit' => 'Zvolené soubory/složky jsou příliš velké pro operaci %s. Limit: %d MB/operace', // %s = cut or copy
 	'Copy_Cut_Count_Limit' => 'Zvolili jste příliš mnoho souborů/složek pro operaci %s. Limit: %d souborů/operace', // %s = cut or copy
 	'Copy_Cut_Not_Allowed' => 'Nemáte oprávnění %s.', // %s(1) = cut or copy, %s(2) = files or folders
-	'Aviary_No_Save' => 'Obrázek nelze uložit',
-	'Zip_No_Extract' => 'Archív nelze rozbalit. Soubor může být poškozen.',
+	'Image_Editor_No_Save' => 'Obrázek nelze uložit',
+	'Image_Editor_Exit' => "Exit",
+    'Image_Editor_Save' => "Save",
+    'Zip_No_Extract' => 'Archív nelze rozbalit. Soubor může být poškozen.',
 	'Zip_Invalid' => 'Přípona není podporována. Povolené: zip, gz, tar.',
 	'Dir_No_Write' => 'Vybraná složka není zapisovatelná.',
 	'Function_Disabled' => 'Funkce %s byla zamítnuta serverem.', // %s = cut or copy

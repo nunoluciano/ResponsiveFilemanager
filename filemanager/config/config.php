@@ -98,6 +98,17 @@ $config = array(
     */
     'thumbs_base_path' => '../thumbs/',
 
+    /*
+    |--------------------------------------------------------------------------
+    | path from base_url to base of thumbs folder
+    |--------------------------------------------------------------------------
+    |
+    | with final /
+    | DO NOT put inside upload folder
+    |
+    */
+    'thumbs_upload_dir' => '/thumbs/',
+
 
     /*
     |--------------------------------------------------------------------------
@@ -107,7 +118,7 @@ $config = array(
     | If you want to be forced to assign the extension starting from the mime type
     |
     */
-    'mime_extension_rename'	=> true,
+    'mime_extension_rename'   => true,
 
 
     /*
@@ -232,27 +243,40 @@ $config = array(
 
 
     //Show or not total size in filemanager (is possible to greatly increase the calculations)
-    'show_total_size'						=> false,
+    'show_total_size'                  => false,
     //Show or not show folder size in list view feature in filemanager (is possible, if there is a large folder, to greatly increase the calculations)
-    'show_folder_size'						=> false,
+    'show_folder_size'                 => false,
     //Show or not show sorting feature in filemanager
-    'show_sorting_bar'						=> true,
+    'show_sorting_bar'                 => true,
     //Show or not show filters button in filemanager
     'show_filter_buttons'                   => true,
     //Show or not language selection feature in filemanager
-    'show_language_selection'				=> true,
+    'show_language_selection'          => true,
     //active or deactive the transliteration (mean convert all strange characters in A..Za..z0..9 characters)
-    'transliteration'						=> false,
+    'transliteration'                  => false,
     //convert all spaces on files name and folders name with $replace_with variable
-    'convert_spaces'						=> false,
+    'convert_spaces'                => false,
     //convert all spaces on files name and folders name this value
-    'replace_with'							=> "_",
+    'replace_with'                     => "_",
     //convert to lowercase the files and folders name
-    'lower_case'							=> false,
+    'lower_case'                    => false,
 
     //Add ?484899493349 (time value) to returned images to prevent cache
     'add_time_to_img'                       => false,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Load more
+    |--------------------------------------------------------------------------
+    */
+  
+    // Enable "Load more" functionality
+    'load_more' => false,
+    // Number of files/folders displayed at once
+    // Should be greater than "file_number_limit_js"
+    'load_more_limit' => 120,
+    // Enable auto-loading on scroll
+    'load_more_auto' => true,
 
     //*******************************************
     //Images limit and resizing configuration
@@ -340,7 +364,7 @@ $config = array(
     'preview_text_files'                      => true, // eg.: txt, log etc.
     'edit_text_files'                         => true, // eg.: txt, log etc.
     'create_text_files'                       => true, // only create files with exts. defined in $config['editable_text_file_exts']
-    'download_files'			  => true, // allow download files or just preview
+    'download_files'         => true, // allow download files or just preview
 
     // you can preview these type of files if $preview_text_files is true
     'previewable_text_file_exts'              => array( "bsh", "c","css", "cc", "cpp", "cs", "csh", "cyc", "cv", "htm", "html", "java", "js", "m", "mxml", "perl", "pl", "pm", "py", "rb", "sh", "xhtml", "xml","xsl",'txt', 'log','' ),
@@ -370,7 +394,7 @@ $config = array(
     //**********************
     //Allowed extensions (lowercase insert)
     //**********************
-    'ext_img'                                 => array( 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'ico' ), //Images
+    'ext_img'                                 => array( 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'ico', 'webp' ), //Images
     'ext_file'                                => array( 'doc', 'docx', 'rtf', 'pdf', 'xls', 'xlsx', 'txt', 'csv', 'html', 'xhtml', 'psd', 'sql', 'log', 'fla', 'xml', 'ade', 'adp', 'mdb', 'accdb', 'ppt', 'pptx', 'odt', 'ots', 'ott', 'odb', 'odg', 'otp', 'otg', 'odf', 'ods', 'odp', 'css', 'ai', 'kmz','dwg', 'dxf', 'hpgl', 'plt', 'spl', 'step', 'stp', 'iges', 'igs', 'sat', 'cgm', 'tiff',''), //Files
     'ext_video'                               => array( 'mov', 'mpeg', 'm4v', 'mp4', 'avi', 'mpg', 'wma', "flv", "webm" ), //Video
     'ext_music'                               => array( 'mp3', 'mpga', 'm4a', 'ac3', 'aiff', 'mid', 'ogg', 'wav' ), //Audio
@@ -381,7 +405,7 @@ $config = array(
     //  If you insert an extensions blacklist array the filemanager don't check any extensions but simply block the extensions in the list
     //  otherwise check Allowed extensions configuration
     //*********************
-    'ext_blacklist'							  => false,//['exe','bat','jpg'],
+    'ext_blacklist'                      => false,//['exe','bat','jpg'],
 
 
     //Empty filename permits like .htaccess, .env, ...
@@ -395,18 +419,81 @@ $config = array(
     | If you want to accept files without extension, remember to add '' extension on allowed extension
     |
     */
-    'files_without_extension'	              => false,
+    'files_without_extension'               => false,
 
     /******************
-    * AVIARY config
+    * TUI Image Editor config
     *******************/
-    'aviary_active'                           => true,
-    'aviary_apiKey'                           => "2444282ef4344e3dacdedc7a78f8877d",
-    'aviary_language'                         => "en",
-    'aviary_theme'                            => "light",
-    'aviary_tools'                            => "all",
-    'aviary_maxSize'                          => "1400",
-    // Add or modify the Aviary options below as needed - they will be json encoded when added to the configuration so arrays can be utilized as needed
+    // Add or modify the options below as needed - they will be json encoded when added to the configuration so arrays can be utilized as needed
+    'tui_active'                           => true,
+    'tui_position'                         => 'bottom',
+    // 'common.bi.image'                      => "../assets/images/logo.png",
+    // 'common.bisize.width'                  => '70px',
+    // 'common.bisize.height'                 => '25px',
+    'common.backgroundImage'               => 'none',
+    'common.backgroundColor'               => '#ececec',
+    'common.border'                        => '1px solid #E6E7E8',
+
+    // header
+    'header.backgroundImage'               => 'none',
+    'header.backgroundColor'               => '#ececec',
+    'header.border'                        => '0px',
+
+    // main icons
+    'menu.normalIcon.path'                 => 'svg/icon-d.svg',
+    'menu.normalIcon.name'                 => 'icon-d',
+    'menu.activeIcon.path'                 => 'svg/icon-b.svg',
+    'menu.activeIcon.name'                 => 'icon-b',
+    'menu.disabledIcon.path'               => 'svg/icon-a.svg',
+    'menu.disabledIcon.name'               => 'icon-a',
+    'menu.hoverIcon.path'                  => 'svg/icon-c.svg',
+    'menu.hoverIcon.name'                  => 'icon-c',
+    'menu.iconSize.width'                  => '24px',
+    'menu.iconSize.height'                 => '24px',
+
+    // submenu primary color
+    'submenu.backgroundColor'              => '#ececec',
+    'submenu.partition.color'              => '#000000',
+
+    // submenu icons
+    'submenu.normalIcon.path'              => 'svg/icon-d.svg',
+    'submenu.normalIcon.name'              => 'icon-d',
+    'submenu.activeIcon.path'              => 'svg/icon-b.svg',
+    'submenu.activeIcon.name'              => 'icon-b',
+    'submenu.iconSize.width'               => '32px',
+    'submenu.iconSize.height'              => '32px',
+
+    // submenu labels
+    'submenu.normalLabel.color'            => '#000',
+    'submenu.normalLabel.fontWeight'       => 'normal',
+    'submenu.activeLabel.color'            => '#000',
+    'submenu.activeLabel.fontWeight'       => 'normal',
+
+    // checkbox style
+    'checkbox.border'                      => '1px solid #E6E7E8',
+    'checkbox.backgroundColor'             => '#000',
+
+    // rango style
+    'range.pointer.color'                  => '#333',
+    'range.bar.color'                      => '#ccc',
+    'range.subbar.color'                   => '#606060',
+
+    'range.disabledPointer.color'          => '#d3d3d3',
+    'range.disabledBar.color'              => 'rgba(85,85,85,0.06)',
+    'range.disabledSubbar.color'           => 'rgba(51,51,51,0.2)',
+
+    'range.value.color'                    => '#000',
+    'range.value.fontWeight'               => 'normal',
+    'range.value.fontSize'                 => '11px',
+    'range.value.border'                   => '0',
+    'range.value.backgroundColor'          => '#f5f5f5',
+    'range.title.color'                    => '#000',
+    'range.title.fontWeight'               => 'lighter',
+
+    // colorpicker style
+    'colorpicker.button.border'            => '0px',
+    'colorpicker.title.color'              => '#000',
+
 
     //The filter and sorter are managed through both javascript and php scripts because if you have a lot of
     //file in a folder the javascript script can't sort all or filter all, so the filemanager switch to php script.
@@ -491,13 +578,55 @@ return array_merge(
             $config['ext_video'],
             $config['ext_music']
         ),
-        // For a list of options see: https://developers.aviary.com/docs/web/setup-guide#constructor-config
-        'aviary_defaults_config' => array(
-            'apiKey'   => $config['aviary_apiKey'],
-            'language' => $config['aviary_language'],
-            'theme'    => $config['aviary_theme'],
-            'tools'    => $config['aviary_tools'],
-            'maxSize'  => $config['aviary_maxSize']
+        'tui_defaults_config' => array(
+            //'common.bi.image'                   => $config['common.bi.image'],
+            //'common.bisize.width'               => $config['common.bisize.width'],
+            //'common.bisize.height'              => $config['common.bisize.height'],
+            'common.backgroundImage'            => $config['common.backgroundImage'],
+            'common.backgroundColor'            => $config['common.backgroundColor'],
+            'common.border'                     => $config['common.border'],
+            'header.backgroundImage'            => $config['header.backgroundImage'],
+            'header.backgroundColor'            => $config['header.backgroundColor'],
+            'header.border'                     => $config['header.border'],
+            'menu.normalIcon.path'              => $config['menu.normalIcon.path'],
+            'menu.normalIcon.name'              => $config['menu.normalIcon.name'],
+            'menu.activeIcon.path'              => $config['menu.activeIcon.path'],
+            'menu.activeIcon.name'              => $config['menu.activeIcon.name'],
+            'menu.disabledIcon.path'            => $config['menu.disabledIcon.path'],
+            'menu.disabledIcon.name'            => $config['menu.disabledIcon.name'],
+            'menu.hoverIcon.path'               => $config['menu.hoverIcon.path'],
+            'menu.hoverIcon.name'               => $config['menu.hoverIcon.name'],
+            'menu.iconSize.width'               => $config['menu.iconSize.width'],
+            'menu.iconSize.height'              => $config['menu.iconSize.height'],
+            'submenu.backgroundColor'           => $config['submenu.backgroundColor'],
+            'submenu.partition.color'           => $config['submenu.partition.color'],
+            'submenu.normalIcon.path'           => $config['submenu.normalIcon.path'],
+            'submenu.normalIcon.name'           => $config['submenu.normalIcon.name'],
+            'submenu.activeIcon.path'           => $config['submenu.activeIcon.path'],
+            'submenu.activeIcon.name'           => $config['submenu.activeIcon.name'],
+            'submenu.iconSize.width'            => $config['submenu.iconSize.width'],
+            'submenu.iconSize.height'           => $config['submenu.iconSize.height'],
+            'submenu.normalLabel.color'         => $config['submenu.normalLabel.color'],
+            'submenu.normalLabel.fontWeight'    => $config['submenu.normalLabel.fontWeight'],
+            'submenu.activeLabel.color'         => $config['submenu.activeLabel.color'],
+            //'submenu.activeLabel.fontWeight'    => $config['submenu.activeLabel.fontWeightcommon.bi.image'],
+            'checkbox.border'                   => $config['checkbox.border'],
+            'checkbox.backgroundColor'          => $config['checkbox.backgroundColor'],
+            'range.pointer.color'               => $config['range.pointer.color'],
+            'range.bar.color'                   => $config['range.bar.color'],
+            'range.subbar.color'                => $config['range.subbar.color'],
+            'range.disabledPointer.color'       => $config['range.disabledPointer.color'],
+            'range.disabledBar.color'           => $config['range.disabledBar.color'],
+            'range.disabledSubbar.color'        => $config['range.disabledSubbar.color'],
+            'range.value.color'                 => $config['range.value.color'],
+            'range.value.fontWeight'            => $config['range.value.fontWeight'],
+            'range.value.fontSize'              => $config['range.value.fontSize'],
+            'range.value.border'                => $config['range.value.border'],
+            'range.value.backgroundColor'       => $config['range.value.backgroundColor'],
+            'range.title.color'                 => $config['range.title.color'],
+            'range.title.fontWeight'            => $config['range.title.fontWeight'],
+            'colorpicker.button.border'         => $config['colorpicker.button.border'],
+            'colorpicker.title.color'           => $config['colorpicker.title.color']
         ),
     )
 );

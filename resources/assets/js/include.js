@@ -7,6 +7,7 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 	var active_contextmenu = true;
 	var myLazyLoad = null;
 	var clipboard = null;
+	var checked=0;
 
 	var delay = (function ()
 	{
@@ -88,16 +89,19 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 			edit_img: function($trigger)
 			{
 				var filename = $trigger.attr('data-name');
+				var filepath = $trigger.attr('data-path');
 				if(jQuery('#ftp').val()==true){
 					var full_path = jQuery('#ftp_base_url').val() + jQuery('#upload_dir').val() + jQuery('#fldr_value').val() + filename;
 				}else{
-					var full_path = jQuery('#base_url').val() + jQuery('#cur_dir').val() + filename;
+					var full_path = jQuery('#base_url').val() + jQuery('#upload_dir').val() + filepath;
 				}
 
-				var aviaryElement = jQuery('#aviary_img');
-				aviaryElement.attr('data-name', filename);
+				var tuiElement = jQuery('#tui-image-editor');
+				tuiElement.attr('data-name', filename);
+				tuiElement.attr('data-path', full_path);
 				show_animation();
-				aviaryElement.attr('src', full_path).load(launchEditor(aviaryElement.attr('id'), full_path));
+				launchEditor(tuiElement.attr('id'), full_path);
+				tuiElement.removeClass('hide');
 			},
 
 			duplicate: function($trigger)
@@ -111,8 +115,7 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 						name = fix_filename(name);
 						if (name != old_name)
 						{
-							var _this = $trigger.find('.rename-file');
-							execute_action('duplicate_file', _this.attr('data-path'), name, _this, 'apply_file_duplicate');
+							execute_action('duplicate_file', $trigger.attr('data-path'), name, $trigger, 'apply_file_duplicate');
 						}
 					}
 				}, old_name+" - copy");
@@ -151,7 +154,7 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 					}
 					else
 					{
-						var target = jQuery('#' + external, windowParent.document);
+						var target = windowParent.jQuery('#' + external);
 						target.val(url).trigger('change');
 						if (typeof windowParent.responsive_filemanager_callback == 'function')
 						{
@@ -332,8 +335,8 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 					// fileinfo
 					options.items.sep = '----';
 					options.items.info = {
-						name: "<strong>" + jQuery('#lang_file_info').val() + "</strong>",
-						disabled: true
+						type: "html",
+						html: "<strong>" + jQuery('#lang_file_info').val() + "</strong>",
 					};
 					options.items.name = {
 						name: $trigger.attr('data-name'),
@@ -388,6 +391,15 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 					return false;
 				}
 			});
+		},
+
+		updateMultipleSelectionButtons: function()
+		{
+			if(checked>0){
+				jQuery("#multiple-selection").show(300);
+			}else{
+				jQuery("#multiple-selection").hide(300);
+			}
 		},
 
 		bindGridEvents: function()
@@ -529,7 +541,7 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 					$el.find('.selection:visible').trigger('click');
 					$el.find('.selector:visible').trigger('click');
 				}else{
-					window[fun]($el.attr('data-file'), jQuery('#field_id').val());	
+					window[fun]($el.attr('data-file'), jQuery('#field_id').val(),$el);	
 				}
 			}
 
@@ -563,6 +575,9 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 		{
 			jQuery('#filter-input').on('keyup', function ()
 			{
+				checked=0;
+				$('.selection:checkbox').removeAttr('checked');
+				FileManager.updateMultipleSelectionButtons();
 				jQuery('.filters label').removeClass("btn-inverse");
 				jQuery('.filters label').find('i').removeClass('icon-white');
 				jQuery('#ff-item-type-all').addClass("btn-inverse");
@@ -703,7 +718,9 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 				var li = jQuery(this).attr('data-item');
 				var liElement = jQuery('#' + li);
 				var labelElement = jQuery('.filters label');
-
+				checked = 0;
+				$('.selection:checkbox').removeAttr('checked');
+				FileManager.updateMultipleSelectionButtons();
 				labelElement.removeClass("btn-inverse");
 				labelElement.find('i').removeClass('icon-white');
 
@@ -801,16 +818,16 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 				jQuery('.grid li.' + li).show(300);
 			}
 		}
-		jQuery('.selector').on('click',function(e){
+		jQuery('.ff-container').on('click','.checkmark',function(e){
+			
 			e.stopPropagation();
-			if(jQuery('.selection:checkbox:checked:visible').length>0){
-				jQuery("#multiple-selection").show(300);
+			
+			if(!jQuery(this).parent().find('input').is(':checked')){
+				checked++;
 			}else{
-				jQuery("#multiple-selection").hide(300);
+				checked--;
 			}
-			// var i = jQuery(this).closest('input');
-			// console.log(i);
-			// i.prop('checked', !i.prop("checked"));
+			FileManager.updateMultipleSelectionButtons();
 		})
 
 		// preview image
@@ -1234,7 +1251,7 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 						"callback": function ()
 						{
 							var newContent = jQuery('#textfile_edit_area').val();
-							if(window.editor){
+							if(window.editor && typeof window.editor.getData === "function"){
 								newContent = window.editor.getData();
 							}
 							// post ajax
@@ -1827,8 +1844,7 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 			}
 			else
 			{
-				var target = jQuery('#' + external, windowParent.document);
-
+				var target = windowParent.jQuery('#' + external);
 				target.val(res).trigger('change');
 				if(callback==0)
 				{
@@ -1945,7 +1961,7 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 			}
 			else
 			{
-				var target = jQuery('#' + external, windowParent.document);
+        var target = windowParent.jQuery('#' + external);
 				target.val(res).trigger('change');
 				if(callback==0)
 				{
@@ -1996,7 +2012,7 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 			}
 			else
 			{
-				var target = jQuery('#' + external, windowParent.document);
+				var target = windowParent.jQuery('#' + external);
 				target.val(res).trigger('change');
 				if(callback==0)
 				{
@@ -2051,7 +2067,7 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 			}
 			else
 			{
-				var target = jQuery('#' + external, windowParent.document);
+				var target = windowParent.jQuery('#' + external);
 				target.val(res).trigger('change');
 				if(callback==0)
 				{
@@ -2074,9 +2090,10 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 		}
 	}
 
-	apply_none = function(file/*, external*/)
+	apply_none = function(file, external,el)
 	{
-		var _this = jQuery('ul.grid').find('li[data-name="' + file + '"] figcaption a');
+		console.log(el);
+		var _this = el.parent().find('form a');
 		_this[1].click();
 		jQuery('.tip-right').tooltip('hide');
 	}
@@ -2103,27 +2120,17 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 		}
 		else
 		{
-			var editor = jQuery('#editor').val();
-			if (editor == 'ckeditor')
-			{
+			if (jQuery('#editor').val() === 'ckeditor') {
 				var funcNum = getUrlParam('CKEditorFuncNum');
 				window.opener.CKEDITOR.tools.callFunction(funcNum, url);
 				window.close();
-			}
-			else
-			{
-				// tinymce 3.X
-				if (parent.tinymce.majorVersion < 4)
-				{
-					parent.tinymce.activeEditor.windowManager.params.setUrl(url);
-					parent.tinymce.activeEditor.windowManager.close(parent.tinymce.activeEditor.windowManager.params.mce_window_id);
-				}
-				// tinymce 4.X
-				else
-				{
-					parent.tinymce.activeEditor.windowManager.getParams().setUrl(url);
-					parent.tinymce.activeEditor.windowManager.close();
-				}
+			} else {
+				window.parent.postMessage({
+					sender: 'responsivefilemanager',
+					url: url,
+					field_id: null
+				}, window.location.origin);
+				parent.tinymce.activeEditor.windowManager.close();
 			}
 		}
 	}
@@ -2158,7 +2165,7 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 
 	apply_file_duplicate = function(container, name)
 	{
-		var li_container = container.parent().parent().parent().parent();
+		var li_container = container.parent();
 
 		li_container.after("<li class='" + li_container.attr('class') + "' data-name='" + li_container.attr('data-name') + "'>" + li_container.html() + "</li>");
 
@@ -2170,7 +2177,7 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 		var new_form_id = 'form' + new Date().getTime();
 
 		form.attr('id', new_form_id);
-		form.find('.tip-right').attr('onclick', "jQuery('#" + new_form_id + "').submit();");
+		form.find('.tip-right').first().attr('onclick', "jQuery('#" + new_form_id + "').submit();");
 	}
 
 	apply_file_rename = function(container, name)
@@ -2386,7 +2393,9 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 	{
 		var lis_dir = jQuery('li.dir', 'ul.grid').filter(':visible');
 		var lis_file = jQuery('li.file', 'ul.grid').filter(':visible');
-
+		checked=0;
+		$('.selection:checkbox').removeAttr('checked');
+		FileManager.updateMultipleSelectionButtons();
 		var vals_dir = [];
 		var values_dir = [];
 		var vals_file = [];
@@ -2488,10 +2497,15 @@ var encodeURL,show_animation,hide_animation,apply,apply_none,apply_img,apply_any
 
 	function launchEditor(id, src)
 	{
-		featherEditor.launch({
-			image: id,
-			url: src
-		});
+		//load image into cropper. Set heights and refresh cropper.
+        imageEditor.loadImageFromURL(src, "SampleImage").then(result=>{
+		    imageEditor.ui.resizeEditor({
+		        imageSize: {oldWidth: result.oldWidth, oldHeight: result.oldHeight, newWidth: result.newWidth, newHeight: result.newHeight}
+		    });
+		}).catch(err=>{
+			bootbox.alert("Something went wrong: "+err);
+		})
+        hide_animation();
 		return false;
 	}
 
